@@ -1,6 +1,21 @@
 
 #ifndef _STRUCTURES_H
 #define _STRUCTURES_H
+#include <sys/types.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include "debug.h"
+#include "spiffy.h"
+#include "bt_parse.h"
+#include "input_buffer.h"
+//#include "structures.h"
+
 
 #include "constants.h"
 
@@ -54,5 +69,9 @@ typedef struct receiver_state {
   char data[2*512*1024];
   int offset;
 } receiver_state;
+
+ #define SINGLE_TRUNK_SIZE 524288
+ #define MAX_PACKET_SIZE 1500
+
 
 #endif /* _STRUCTURES_H */

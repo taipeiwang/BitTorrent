@@ -25,5 +25,9 @@ git add spiffy.h
 git add structures.h
 git add packet_helper.h
 git add packet_helper.c
+git add process.c
+git add process.h
+git add peer_run.c
+git add peer_run.h
 git tag -f checkpoint-1 -m "commit"
 

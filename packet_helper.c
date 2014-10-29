@@ -1,8 +1,8 @@
 #include "packet_helper.h"
 
 //TODO TEMP SOLUTION!!!!!!!!!!
-extern int SINGLE_TRUNK_SIZE;
-extern int MAX_PACKET_SIZE;
+//extern int SINGLE_TRUNK_SIZE;
+//extern int MAX_PACKET_SIZE;
 
 void assembly_i_have(normal_packet * who_has, normal_packet * i_have) {
 
@@ -96,7 +96,7 @@ void send_packet(void * packet, struct sockaddr_in servaddr) {
 
   int sockfd;
   DPRINTF(DEBUG_SOCKETS,"Sending to %s:%d\n", 
-  inet_ntoa(servaddr.sin_addr), ntohs(servaddr.sin_port));
+                inet_ntoa(servaddr.sin_addr), ntohs(servaddr.sin_port));
   sockfd=socket(AF_INET,SOCK_DGRAM,0);
   if (sockfd > 0) {
     int success = spiffy_sendto(sockfd,packet,ntohs(((request_header *)packet)->packet_len),0,(struct sockaddr *)&servaddr,sizeof(servaddr));

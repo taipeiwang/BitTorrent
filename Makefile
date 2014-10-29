@@ -4,7 +4,7 @@ CFLAGS		= -g -Wall -DDEBUG
 LDFLAGS		= -lm
 #TESTDEFS	= -DTESTING			# comment this out to disable debugging code
 #DEBUGDEFS	= "-DDEBUG=DEBUG_ALL"
-OBJS		= peer.o packet_helper.o bt_parse.o spiffy.o debug.o input_buffer.o chunk.o sha.o
+OBJS		= peer.o process.o peer_run.o packet_helper.o bt_parse.o spiffy.o debug.o input_buffer.o chunk.o sha.o
 MK_CHUNK_OBJS   = make_chunks.o chunk.o sha.o
 
 BINS            = peer make-chunks
