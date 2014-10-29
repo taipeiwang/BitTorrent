@@ -40,7 +40,7 @@ typedef struct normal_packet {
 
 typedef struct data_packet {
   request_header header;
-  char chunks[1484]; //Avoid too big headers.
+  char chunks[1484]; 
 } data_packet;
 
 typedef struct get_packet {
@@ -66,7 +66,7 @@ typedef struct receiver_state {
   short chunk_count;
   short chunk_id;
   normal_packet * i_have;
-  char data[2*512*1024];
+  char * data;
   int offset;
 } receiver_state;
 

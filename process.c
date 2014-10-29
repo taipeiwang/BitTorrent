@@ -8,17 +8,30 @@
  * if all received, write to the file.
  */
 
-static void initialize_receiver_stat(int num) {
+ void initialize_receiver_stat(int num) {
   receiver_stat.offset = 0;
   receiver_stat.chunk_id = 0;
-  //receiver_stat.data = malloc(num*512*1024);
+  	DPRINTF(DEBUG_SOCKETS,"Receiver Stat initilizaed with size %d * 512*1024!\n",num);
+  receiver_stat.data = malloc(num*512*1024);
   receiver_stat.last_packet_rcvd = 0;
   receiver_stat.chunk_count = num;
 }
 
-static void clean_up_receiver_stat() {
+ void initialize_sender_stat(int num) {
+	sender_stat.last_packet_acked = 0;
+	sender_stat.last_packet_sent = 0;
+	sender_stat.offset = 0;
+	sender_stat.chunk_id = num;
+ }
+
+ void reset_receiver_stat() {
   receiver_stat.last_packet_rcvd = 0;
   receiver_stat.offset = 0;
+}
+ void clean_up_receiver_stat() {
+  
+  free(receiver_stat.i_have);
+  free(receiver_stat.data);
 }
 
 void process_data_packet(data_packet * data,struct sockaddr_in from,bt_config_t * config) {
@@ -30,6 +43,7 @@ void process_data_packet(data_packet * data,struct sockaddr_in from,bt_config_t 
 	if (seq_num - receiver_stat.last_packet_rcvd == 1) {
 		data_size = ntohs(data->header.packet_len) - 16;
 		int offset = receiver_stat.offset+receiver_stat.chunk_id * 512 * 1024;
+		DPRINTF(DEBUG_SOCKETS,"Memcopy with offset %d \n",offset);
 		memcpy(receiver_stat.data+offset,data->chunks,data_size);
 		receiver_stat.offset += data_size;
 		request_header ack;
@@ -50,12 +64,13 @@ void process_data_packet(data_packet * data,struct sockaddr_in from,bt_config_t 
 				 if (error == 0)
 					DPRINTF(DEBUG_SOCKETS,"Write Error.\n");
 				 fclose(output_fp);
+				 clean_up_receiver_stat();
 				 //Clean up receiver state.
 			}
 			else {
 				//Next chunk.
 				process_i_have(receiver_stat.i_have,from,config,receiver_stat.chunk_id);
-				clean_up_receiver_stat();
+				reset_receiver_stat();
 			}
 		}
 	}
@@ -68,15 +83,19 @@ void process_data_packet(data_packet * data,struct sockaddr_in from,bt_config_t 
  */
 void process_get_packet(get_packet * get_p,struct sockaddr_in from,bt_config_t * config) {
 	DPRINTF(DEBUG_SOCKETS,"PROCESSING GET!\n");
-		char tmp[CHUNK_HASH_LEN];
+	char tmp[CHUNK_HASH_LEN];
+	char file_name[128];
+	char useless[128];
 	FILE *chunk_fp;
-	chunk_fp = fopen(config->has_chunk_file, "r");
+	chunk_fp = fopen(config->chunk_file, "r");
 	unsigned short num;
 	char hash[41];
 	if (chunk_fp == NULL) {
 		fprintf(stderr, "Can't open chunk file!\n");
 		exit(1);
 	}
+	fscanf(chunk_fp, "File: %s", file_name);
+	fscanf(chunk_fp, "%s", useless);
 	//TODO: Currently Assuming Num < 10;
 	while (fscanf(chunk_fp, "%hu %s", &num, hash) != EOF) {
 	 
@@ -91,13 +110,12 @@ void process_get_packet(get_packet * get_p,struct sockaddr_in from,bt_config_t *
 		}
 		if (memcmp(get_p->hash,tmp,20)== 0) {
 			//Open the chunk file for memory mapping.
-			//TODO: hardcoded for now.
-			FILE * fd2 = fopen("example/B.tar","rb");
+			FILE * fd2 = fopen(file_name,"rb");
 			if (fd2 == NULL) {
 					DPRINTF(DEBUG_SOCKETS,"cannot Open File\n");
 					return;
 			}
-			 DPRINTF(DEBUG_SOCKETS,"Targeting Chunk File is %s\n",config->chunk_file);
+			 DPRINTF(DEBUG_SOCKETS,"Targeting Chunk File is %s\n",file_name);
 			//Load data into memory.
 			//512*1024 is multiple of page_size
 			//void * adr = mmap(NULL,512*1024,PROT_READ,MAP_SHARED, fd2, num*512*1024);
@@ -124,10 +142,7 @@ void process_get_packet(get_packet * get_p,struct sockaddr_in from,bt_config_t *
 			fclose(output_fp);
 			*/
 			DPRINTF(DEBUG_SOCKETS,"FWRITE %d elements\n",error);
-			sender_stat.last_packet_acked = 0;
-			sender_stat.last_packet_sent = 0;
-			sender_stat.offset = 0;
-			sender_stat.chunk_id = num;
+			initialize_sender_stat(num);
 			//DPRINTF(DEBUG_SOCKETS,"Memory Copy Error?, Num is %d\n",num);
 			//memcpy(sender_stat.data,adr,512*1024);
 			fclose(fd2);
@@ -244,7 +259,6 @@ void process_inbound_udp(int sock,bt_config_t * config) {
 	unsigned int packet_size = 0;
 	if (header->type == PACKET_WHOHAS) {
 		process_who_has((normal_packet *)header, from, config);
-
 		DPRINTF(DEBUG_SOCKETS,"after process who has packet\n");
 
 	}
@@ -253,7 +267,6 @@ void process_inbound_udp(int sock,bt_config_t * config) {
 		packet_size = ntohs(i_have->header.packet_len);
 		receiver_stat.i_have = malloc(packet_size);
 		memcpy(receiver_stat.i_have,i_have,packet_size);
-		DPRINTF(DEBUG_SOCKETS,"*****************\nbefore process IHAVE packet\n");
 		process_i_have((normal_packet *)header, from, config,0);
 		DPRINTF(DEBUG_SOCKETS,"\nafter process IHAVE packet\n");
 	}

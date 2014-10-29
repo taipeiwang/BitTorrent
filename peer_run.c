@@ -8,8 +8,13 @@ void handle_user_input(char *line, void *cbdata) {
 
 	if (sscanf(line, "GET %120s %120s", chunkf, outf)) {
 		if (strlen(outf) > 0) {
+			strncpy(config->output_file,outf,strlen(outf)+1);
+			DPRINTF(DEBUG_SOCKETS,"output file is %s\n",config->output_file);
 			process_get(chunkf, outf,config->peer_list_file,config->identity);
 		}
+	}
+	else {
+		printf("Invalid User Input. Please try again!\n");
 	}
 }
 void peer_run(bt_config_t *config) {
