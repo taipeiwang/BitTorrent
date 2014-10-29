@@ -2,8 +2,9 @@
 CC 		= gcc
 CFLAGS		= -g -Wall -DDEBUG
 LDFLAGS		= -lm
-TESTDEFS	= -DTESTING			# comment this out to disable debugging code
-OBJS		= peer.o bt_parse.o spiffy.o debug.o input_buffer.o chunk.o sha.o
+#TESTDEFS	= -DTESTING			# comment this out to disable debugging code
+#DEBUGDEFS	= "-DDEBUG=DEBUG_ALL"
+OBJS		= peer.o packet_helper.o bt_parse.o spiffy.o debug.o input_buffer.o chunk.o sha.o
 MK_CHUNK_OBJS   = make_chunks.o chunk.o sha.o
 
 BINS            = peer make-chunks
@@ -11,7 +12,8 @@ TESTBINS        = test_debug test_input_buffer
 
 # Implicit .o target
 .c.o:
-	$(CC) $(TESTDEFS) -c $(CFLAGS) $<
+#	$(CC) $(TESTDEFS) -c $(CFLAGS) $<
+	$(CC) $(TESTDEFS) $(DEBUGDEFS) -c $(CFLAGS) $<
 
 # Explit build and testing targets
 
