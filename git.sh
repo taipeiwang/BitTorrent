@@ -1,4 +1,3 @@
-git tag -d checkpoint-1
 git add git.sh
 git add readme.txt
 git add tests.txt
@@ -16,6 +15,9 @@ git add input_buffer.c
 git add input_buffer.h
 git add Makefile
 git add peer.c
+git add peer.h
+git add peer_run.c
+git add peer_run.h
 git add runA.sh
 git add runB.sh
 git add server.c
@@ -24,6 +26,11 @@ git add sha.h
 git add spiffy.c
 git add spiffy.h
 git add structures.h
-git commit -m "commit"
-git tag -a checkpoint-1 -m "commit"
-git push --tag
+git add packet_helper.h
+git add packet_helper.c
+git add process.c
+git add process.h
+git add process_helper.c
+git add process_helper.h
+git tag -f checkpoint-2 -m "commit"
+
